@@ -1,511 +1,0 @@
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>نقطة البيع - الدكتور</title>
-  <link rel="stylesheet" href="pos.css" />
-  <script>
-  try {
-    const theme = localStorage.getItem("theme");
-    if (theme === "dark") {
-      document.documentElement.classList.add("dark-theme");
-    }
-  } catch (e) {}
-</script>
-</head>
-<body>
-  <div id="topToast" class="toast">📢 تم تحميل الصفحة بنجاح</div>
-  <div class="topbar">
-    <div class="user-info">
-      <span id="userInfo">👤 المستخدم: ...</span>
-      <span id="clock">🕒 جاري تحميل الوقت...</span>
-      <button id="themeToggle" class="theme-toggle" title="تبديل المظهر">🌓</button> 
-    </div>
-    <!-- ✅ زر مزامنة الصور -->
-<div class="topbar-section" id="syncImagesSection" onclick="openModal('syncImagesModal')">
-  <div class="topbar-icon large-icon">🔃</div>
-  <div class="topbar-label">آخر مزامنة: <span id="lastSyncTime">—</span></div>
-</div>
-
-</button>
-    <div class="topbar-buttons">
-      <div class="icon-button" onclick="showScreen('msgScreen')">
-  <span class="badge" id="msgCount">2</span>
-  📩
-  <span>الرسائل</span>
-</div>
-
-      <div class="icon-button" onclick="openCalendar()">📅<span>التقويم</span></div>
-
-      <div class="icon-button" onclick="showScreen('lowStockScreen')">⚠️<span>المنتهية</span><span id="stockCount" class="badge">5</span></div>
-      <div class="icon-button" onclick="showScreen('dailyScreen')">📊<span>الحركة</span></div>
-      <div class="icon-button" onclick="showScreen('wasteScreen')">🗑️<span>تالف</span></div>
-      <div class="icon-button" onclick="showScreen('incomeScreen')">💵<span>مقبوض</span></div>
-      <div class="icon-button" onclick="showScreen('expenseScreen')">💳<span>مدفوع</span></div>
-      <div class="icon-button" onclick="openPasswordModal()">⚙️<span>الإعدادات</span></div>
-      <div class="icon-button" onclick="logout()">🔓<span>خروج</span></div>
-    </div>
-  </div>
-
-  <div id="settingsDropdown" class="dropdown-menu">
- <button onclick="
-  document.getElementById('settingsDropdown').style.display='none';
-  openItemModal();
-">📦 إضافة صنف</button>
-
-
-  <button onclick="document.getElementById('settingsDropdown').style.display='none'; openModal('categoryModal'); loadCategoriesList()">🗂️ إضافة تصنيف</button>
-  <button onclick="document.getElementById('settingsDropdown').style.display='none'; openModal('branchModal'); loadBranchesList()">🏢 إضافة فرع</button>
-  <button onclick="document.getElementById('settingsDropdown').style.display='none'; showSettingsForm('clientForm')">👤 إضافة عميل</button>
-  <button onclick="document.getElementById('settingsDropdown').style.display='none'; showSettingsForm('supplierForm')">🚚 إضافة مورد</button>
-  <button onclick="document.getElementById('settingsDropdown').style.display='none'; showSettingsForm('expenseForm')">💳 إضافة مصروف</button>
-  <button onclick="document.getElementById('settingsDropdown').style.display='none'; showSettingsForm('incomeForm')">💵 إضافة إيراد</button>
-  <button onclick="document.getElementById('settingsDropdown').style.display='none'; showSettingsForm('paymentForm')">💰 طرق الدفع</button>
-<button onclick="document.getElementById('settingsDropdown').style.display='none'; openModal('investorModal'); loadInvestors()">🧑‍💼 إضافة مستثمر</button>
-<button onclick="document.getElementById('settingsDropdown').style.display='none'; openModal('companyModal'); loadCompanies()">🏢 إضافة شركة استثمارية</button>
-<button onclick="document.getElementById('settingsDropdown').style.display='none'; openModal('fundModal'); loadFunds()">💰 إضافة صندوق استثماري</button>
-<button onclick="document.getElementById('settingsDropdown').style.display='none'; openModal('generalModal'); loadGeneralSettings()">⚙️ إعدادات عامة</button>
-<button onclick="document.getElementById('settingsDropdown').style.display='none'; openModal('generalModal'); loadGeneralSettings()">📊 حالة النظام</button>
-</div>
-
-
- <div id="msgScreen" class="screen">
-  <h2>📩 شاشة الرسائل</h2>
-
-  <!-- ✅ اختيار المستلم قبل الإرسال -->
-  <div class="recipient-row" style="margin-bottom: 10px;">
-    <label for="recipientSelect">📤 إرسال إلى:</label>
-    <select id="recipientSelect" style="padding: 5px;">
-      <option value="">اختر المستلم</option>
-    </select>
-  </div>
-
-  <!-- ✅ إدخال الرسالة وزر الإرسال -->
-  <div class="message-input-row" style="margin-top: 10px;">
-    <input type="text" id="chatInput" placeholder="اكتب رسالتك هنا..." style="width: 70%;" />
-    <button onclick="sendMessage()" style="width: 25%;">📨 إرسال</button>
-  </div>
-  <!-- ✅ حالة الإرسال -->
-  <div id="sendStatus" class="send-status" style="margin-top: 10px;"></div>
-<h3 style="margin-bottom: 10px;">📨 نص الرسالة</h3>
-<div id="messageList"></div>
-<div id="noMessagesNotice" style="text-align:center; color:#666; font-size:16px; margin-top:10px; display:none;">
-  📭 لا توجد رسائل حالياً.
-</div>
-   <!--<div id="messageList" class="message-list">لا توجد رسائل حالياً.</div>-->
-</div>
-
-
-
-  <div id="calendarScreen" class="screen">
-  <h2>📅 شاشة التقويم</h2>
-  <input type="date" id="calendarDate" title="اختر التاريخ" />
-  <textarea id="calendarNote" placeholder="اكتب ملاحظتك هنا..." title="مربع كتابة الملاحظات" rows="4"></textarea>
-  <button onclick="saveNote()">💾 حفظ الملاحظة</button>
-  <div id="noteStatus"></div>
-  <div id="calendarStatus" style="margin-top: 10px; font-size: 16px; color: #555;"></div>
-
-  <hr>
-  <h3>📋 الملاحظات السابقة:</h3>
-  <div id="noteList"></div>
-</div>
-
-
-  <div id="lowStockScreen" class="screen"><h2>⚠️ شاشة الأصناف المنتهية</h2></div>
-  <div id="dailyScreen" class="screen"><h2>📊 شاشة الحركة اليومية</h2></div>
-  <div id="wasteScreen" class="screen"><h2>🗑️ شاشة إضافة تالف</h2></div>
-  <div id="incomeScreen" class="screen"><h2>💵 شاشة إضافة مقبوض</h2></div>
-  <div id="expenseScreen" class="screen"><h2>💳 شاشة إضافة مدفوع</h2></div>
-
-  <div id="settingsScreen" class="screen">
-  <!-- النماذج داخل الشاشة -->
-  <div id="itemForm" class="settings-form"><h3>📦 نموذج إضافة صنف</h3></div>
-  <div id="clientForm" class="settings-form"><h3>👤 نموذج إضافة عميل</h3></div>
-  <div id="supplierForm" class="settings-form"><h3>🚚 نموذج إضافة مورد</h3></div>
-  <div id="expenseForm" class="settings-form"><h3>💳 نموذج إضافة مصروف</h3></div>
-  <div id="incomeForm" class="settings-form"><h3>💵 نموذج إضافة إيراد</h3></div>
-  <div id="paymentForm" class="settings-form"><h3>💰 نموذج طرق الدفع</h3></div>
-
-  <!-- النماذج التي تم تحويلها إلى نوافذ منبثقة -->
-  <!-- هذه مجرد إشارات داخل الشاشة، النوافذ نفسها خارج هذا القسم -->
-  <div id="categoryForm" class="settings-form"><h3>🗂️ نافذة التصنيف (منبثقة)</h3></div>
-  <div id="branchForm" class="settings-form"><h3>🏢 نافذة الفرع (منبثقة)</h3></div>
-  <div id="investorForm" class="settings-form"><h3>🧑‍💼 نافذة المستثمر (منبثقة)</h3></div>
-  <div id="companyForm" class="settings-form"><h3>🏢 نافذة الشركة الاستثمارية (منبثقة)</h3></div>
-  <div id="fundForm" class="settings-form"><h3>💰 نافذة الصندوق الاستثماري (منبثقة)</h3></div>
-  <div id="generalForm" class="settings-form"><h3>⚙️ نافذة الإعدادات العامة (منبثقة)</h3></div>
- <div id="generalForm" class="settings-form"><h3>⚙️ نافذة حالة النظام  (منبثقة)</h3></div>
-</div>
-
-<div id="categoryModal" class="modal">
-  <div class="modal-content">
-    <button class="modal-close" onclick="closeModal('categoryModal')">❌</button>
-    <h3>🗂️ إضافة تصنيف جديد</h3>
-    <input type="text" id="categoryName" placeholder="اسم التصنيف" />
-    <label for="categoryImage">📷 صورة التصنيف:</label>
-    <input type="file" id="categoryImage" accept=".jpg,.jpeg,.png,.webp" />
-    <div id="imagePreview" style="margin: 5px 0; font-size: 14px; color: #555;"></div>
-    <div style="display: flex; gap: 10px; align-items: center;">
-      <button id="categorySaveBtn" onclick="saveCategory()">💾 حفظ التصنيف</button>
-    </div>
-    <div id="categoryStatus" class="status-text"></div>
-    <div id="categoryList" class="record-table"></div>
-  </div>
-</div>
-
-
-
-<!-- شاشة منبثقة لحالة النظام -->
-<div id="generalModal" class="modal">
-  <div class="modal-content">
-    <button class="modal-close" onclick="closeModal('generalModal')">❌</button>
-    <h3>📊 حالة استخدام النظام</h3>
-    <!-- زر فتح Firebase Console -->
-    <div style="margin-bottom: 15px;">
-      <a href="https://console.firebase.google.com/" target="_blank" style="text-decoration: none;">
-        <button style="background-color: #007bff; color: white; padding: 8px 12px; border: none; border-radius: 6px; cursor: pointer;">
-          🔗 فتح Firebase Console
-        </button>
-      </a>
-    </div>
-    <!-- مكان عرض الحالة -->
-    <div id="generalStatus" class="status-text">⏳ جاري تحميل حالة النظام...</div>
-  </div>
-</div>
-
-
-<div id="itemModal" class="modal">
-  <div class="modal-content">
-    <button class="modal-close" onclick="closeModal('itemModal')">❌</button>
-    <h3>📦 إضافة صنف جديد</h3>
-
-    <label for="itemName">🏷️ اسم الصنف:</label>
-    <input type="text" id="itemName" placeholder="اسم الصنف" />
-
-    <label for="categorySelect">🗂️ اسم التصنيف:</label>
-    <select id="categorySelect"><option value="">— اختر التصنيف —</option></select>
-
-    <label for="branchSelect">🏢 اسم الفرع:</label>
-    <select id="branchSelect"><option value="">— اختر الفرع —</option></select>
-
-    <label for="quantity">📦 الكمية:</label>
-    <input type="number" id="quantity" value="0" />
-
-    <label for="baseCost">💰 سعر التكلفة الأساسي:</label>
-    <input type="number" id="baseCost" value="0" />
-
-    <label for="branchCost">💰 سعر تكلفة الفرع:</label>
-    <input type="number" id="branchCost" value="0" />
-
-    <label for="reorderLimit">⚠️ حد الطلب:</label>
-    <input type="number" id="reorderLimit" value="0" />
-
-    <label for="itemImage">📷 تحميل صورة الصنف:</label>
-    <input type="file" id="itemImage" accept=".jpg,.jpeg,.png,.webp" onchange="previewItemImage()" />
-    <div id="itemImagePreview" style="margin: 5px 0; font-size: 14px; color: #555;"></div>
-
-    <div style="margin: 10px 0;">
-      <button id="itemSaveBtn" onclick="saveItem()">💾 حفظ الصنف</button>
-    </div>
-
-    <div id="itemStatus" class="status-text"></div>
-
-    <div id="itemTableWrapper" class="record-table" style="margin-top: 20px;">
-      <table>
-        <thead>
-          <tr>
-            <th>الكود</th>
-            <th>الاسم</th>
-            <th>التصنيف</th>
-            <th>الفرع</th>
-            <th>الكمية</th>
-            <th>تكلفة أساسية</th>
-            <th>تكلفة فرع</th>
-            <th>إجمالي أساسي</th>
-            <th>إجمالي فرع</th>
-            <th>حد الطلب</th>
-            <th>📷 الصورة</th>
-            <th>🔗 الرابط</th>
-            <th>🛠</th>
-          </tr>
-        </thead>
-        <tbody id="itemTableBody"></tbody>
-      </table>
-    </div>
-  </div>
-</div>
-
-
-
-
-
-
-
-
-
-
-<!-- شاشة منبثقة لإضافة فرع -->
-<div id="branchModal" class="modal">
-  <div class="modal-content">
-    <button class="modal-close" onclick="closeModal('branchModal')">X</button>
-    <h3>🏢 إضافة فرع جديد</h3>
-    <input type="text" id="branchName" placeholder="🏷️ اسم الفرع" />
-    <button onclick="saveBranch()">💾 حفظ الفرع</button>
-    <div id="branchStatus" class="status-text"></div>
-    <div id="branchList" class="record-table"></div>
-  </div>
-</div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<!-- 🧩 شاشة المزامنة الكاملة -->
-<div id="syncImagesModal" class="modal">
-  <div class="modal-content">
-    <h3>🔄 مزامنة روابط الصور</h3>
-
-    <!-- ✅ زر توليد ملفات JSON -->
-    <button onclick="generateJson()">📁 توليد ملفات الصور من Google Drive</button>
-    <p id="generateStatus">📭 لم يتم تنفيذ التوليد بعد</p>
-
-    <!-- 📊 جدول نتائج التوليد -->
-    <table class="sync-table">
-      <thead>
-        <tr>
-          <th>📂 النوع</th>
-          <th>📸 عدد الصور</th>
-          <th>📅 تاريخ التوليد</th>
-          <th>👤 المستخدم</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>📁 التصنيفات</td>
-          <td id="countCategories">—</td>
-          <td id="dateCategories">—</td>
-          <td id="userCategories">—</td>
-        </tr>
-        <tr>
-          <td>📦 الأصناف</td>
-          <td id="countItems">—</td>
-          <td id="dateItems">—</td>
-          <td id="userItems">—</td>
-        </tr>
-      </tbody>
-    </table>
-
-    <hr>
-
-    <!-- ✅ زر تصدير الصور إلى Firestore -->
-   <button onclick="exportImagesToFirestore()">🚀 تصدير الصور إلى قاعدة البيانات</button>
-<span id="exportStatus">📭 لم يتم تنفيذ التصدير بعد</span>
-
-
-    <!-- 📊 جدول نتائج التصدير -->
-    <table class="sync-table">
-      <thead>
-        <tr>
-          <th>📂 النوع</th>
-          <th>✅ تم رفعه</th>
-          <th>❌ تم تجاهله</th>
-          <th>📅 تاريخ التصدير</th>
-          <th>📄 تقرير الأخطاء</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>📁 التصنيفات + الأصناف</td>
-          <td id="uploadedCount">—</td>
-          <td id="skippedCount">—</td>
-          <td id="exportDate">—</td>
-          <td><a id="errorReportLink" href="#" target="_blank">—</a></td>
-        </tr>
-      </tbody>
-    </table>
-
-    <button onclick="closeModal('syncImagesModal')">❌ إغلاق</button>
-  </div>
-</div>
-
-
-  <div id="logoutScreen" class="screen">
-    <h2>🔓 تم تسجيل الخروج</h2>
-    <p>تم مسح البيانات المحلية بنجاح.</p>
-  </div>
-  <!-- نافذة منبثقة للتحقق بكلمة السر -->
-  <div id="passwordModal" class="modal">
-  <div class="modal-content">
-    <button class="modal-close" onclick="closePasswordModal()">❌</button>
-    <h3>🔐 الدخول إلى الإعدادات</h3>
-    <input type="password" id="settingsPassword" placeholder="أدخل كلمة السر..." />
-    <button onclick="verifySettingsPassword()">دخول</button>
-    <div id="authStatus"></div>
-  </div>
-</div>
-
-
-
-
-
-
-
-
-
-
-
-
-<!-- Firebase SDK -->
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
-
-<!-- Firebase Config -->
-<script>
-  const firebaseConfig = {
-    apiKey: "AIzaSyAwafvR_SA8v_tsA_B0YhknMqlytMNUCQk",
-    authDomain: "pos-bahaa.firebaseapp.com",
-    projectId: "pos-bahaa",
-    storageBucket: "pos-bahaa.firebasestorage.app",
-    messagingSenderId: "898451030919",
-    appId: "1:898451030919:web:822b019b0b038081470922",
-    measurementId: "G-XT1YQKFJHD"
-  };
-
-  firebase.initializeApp(firebaseConfig);
-  const db = firebase.firestore();
-</script>
-
-<!-- زر التصدير + الحالة -->
-<button onclick="exportImagesToFirestore()">🚀 تصدير الصور إلى قاعدة البيانات</button>
-<span id="exportStatus">📭 لم يتم تنفيذ التصدير بعد</span>
-
-<!-- كود التصدير -->
-<script>
-  async function exportImagesToFirestore() {
-    const status = document.getElementById("exportStatus");
-    status.textContent = "🚀 جارى تحميل الملفات وتحديث البيانات...";
-    status.style.color = "blue";
-
-    try {
-      // روابط السكربت الآمنة
-      const categoryJsonUrl = "https://script.google.com/macros/s/AKfycbwce4kpNoXCKZlyV3Tf5BRwQWl-cW3hLk2xXuethq1CwIwbdOgq2Em4sSd4L8dYG5BH/exec?type=category";
-      const itemJsonUrl = "https://script.google.com/macros/s/AKfycbwce4kpNoXCKZlyV3Tf5BRwQWl-cW3hLk2xXuethq1CwIwbdOgq2Em4sSd4L8dYG5BH/exec?type=item";
-
-      const [categoryRes, itemRes] = await Promise.all([
-        fetch(categoryJsonUrl).then(r => r.json()),
-        fetch(itemJsonUrl).then(r => r.json())
-      ]);
-
-      let updated = 0, skipped = 0;
-
-      // تحديث التصنيفات
-      const categorySnap = await db.collection("categories").get();
-      categorySnap.forEach(async doc => {
-        const data = doc.data();
-        const imageName = data.imageName;
-        const imageUrl = categoryRes[imageName];
-        if (imageName && imageUrl) {
-          await doc.ref.update({ imageUrl });
-          updated++;
-        } else {
-          skipped++;
-        }
-      });
-
-      // تحديث الأصناف
-      const itemSnap = await db.collection("items").get();
-      itemSnap.forEach(async doc => {
-        const data = doc.data();
-        const imageName = data.imageName;
-        const imageUrl = itemRes[imageName];
-        if (imageName && imageUrl) {
-          await doc.ref.update({ imageUrl });
-          updated++;
-        } else {
-          skipped++;
-        }
-      });
-
-      status.textContent = `✅ تم التحديث: ${updated} | ❌ تم تجاهل: ${skipped}`;
-      status.style.color = "green";
-
-    } catch (err) {
-      console.error("❌ خطأ أثناء التصدير:", err);
-      status.textContent = "❌ فشل في التصدير";
-      status.style.color = "red";
-    }
-  }
-</script>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  <script type="module" src="script-pos.js"></script>
-
-</body>
-</html>
