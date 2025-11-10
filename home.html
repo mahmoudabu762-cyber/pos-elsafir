@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+  <meta charset="UTF-8">
+  <title>عرض صور الأصناف</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      direction: rtl;
+      background: #f0f4f8;
+      padding: 20px;
+    }
+    h2 {
+      color: #0077cc;
+      text-align: center;
+    }
+    .item-card {
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      padding: 12px;
+      margin: 16px auto;
+      max-width: 300px;
+      background: #ffffff;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      text-align: center;
+    }
+    .item-card img {
+      max-width: 100%;
+      max-height: 200px;
+      border-radius: 6px;
+      margin-bottom: 10px;
+    }
+    .item-card h3 {
+      margin: 0;
+      font-size: 18px;
+      color: #333;
+    }
+  </style>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-app.js";
+    import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-firestore.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAwafvR_SA8v_tsA_B0YhknMqlytMNUCQk",
+      authDomain: "pos-bahaa.firebaseapp.com",
+      projectId: "pos-bahaa",
+      storageBucket: "pos-bahaa.firebasestorage.app",
+      messagingSenderId: "898451030919",
+      appId: "1:898451030919:web:822b019b0b038081470922",
+      measurementId: "G-XT1YQKFJHD"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+
+    window.addEventListener("DOMContentLoaded", () => {
+      const container = document.getElementById("itemCardContainer");
+      const repoBaseUrl = "https://raw.githubusercontent.com/mahmoudabu762-cyber/item-images/main/";
+
+      onAuthStateChanged(auth, async (user) => {
+        if (!user) {
+          alert("❌ يجب تسجيل الدخول أولاً");
+          window.location.href = "/login.html";
+          return;
+        }
+
+        try {
+          const snapshot = await getDocs(collection(db, "items"));
+          snapshot.forEach(docSnap => {
+            const data = docSnap.data();
+            const imageName = data.imageName?.trim();
+            const itemName = data.itemName;
+
+            if (imageName && itemName) {
+              const imageUrl = `${repoBaseUrl}${imageName}`;
+              const card = document.createElement("div");
+              card.className = "item-card";
+              card.innerHTML = `
+                <img src="${imageUrl}" alt="${itemName}">
+                <h3>${itemName}</h3>
+              `;
+              container.appendChild(card);
+            }
+          });
+        } catch (err) {
+          console.error("❌ خطأ أثناء تحميل البيانات:", err);
+        }
+      });
+    });
+  </script>
+</head>
+<body>
+  <h2>🖼️ عرض صور الأصناف</h2>
+  <div id="itemCardContainer"></div>
+</body>
+</html>

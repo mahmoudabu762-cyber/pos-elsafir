@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>تسجيل الدخول - الشريف</title>
+ 
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: "Cairo", sans-serif;
+      background: linear-gradient(135deg, #007bff, #00c6ff);
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .login-card {
+      background: white;
+      padding: 30px;
+      border-radius: 15px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.2);
+      width: 100%;
+      max-width: 400px;
+      text-align: center;
+    }
+    h2 {
+      margin-bottom: 20px;
+      color: #007bff;
+    }
+    input, select {
+      margin: 10px 0;
+      padding: 10px;
+      font-size: 16px;
+      width: 100%;
+      box-sizing: border-box;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+    button {
+      margin: 10px 0;
+      padding: 10px;
+      font-size: 16px;
+      width: 100%;
+      background: #007bff;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    button:hover {
+      background: #0056b3;
+    }
+    #error, #modalError {
+      color: red;
+      font-weight: bold;
+      min-height: 24px;
+      margin-top: 10px;
+    }
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.5);
+      justify-content: center;
+      align-items: center;
+    }
+    .modal-content {
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      width: 90%;
+      max-width: 500px;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    .close-btn {
+      background: red;
+      color: white;
+      border: none;
+      padding: 5px 10px;
+      float: left;
+      margin-bottom: 10px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .user-box {
+      border: 1px solid #ccc;
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 5px;
+      text-align: left;
+    }
+  </style>
+</head>
+<body>
+   
+  <div class="login-card">
+    <button onclick="forceReload()">🔄</button>
+    <h2>تسجيل الدخول</h2>
+    <input type="email" id="email" placeholder="البريد الإلكتروني" />
+    <input type="password" id="password" placeholder="كلمة المرور" />
+    <button id="loginBtn">دخول</button>
+    <button id="openModalBtn">تسجيل مستخدم جديد</button>
+    <p id="error"></p>
+    
+  </div>
+
+  <div class="modal" id="userModal">
+    <div class="modal-content">
+      <button class="close-btn" id="closeModalBtn">إغلاق</button>
+      <h3>إضافة مستخدم جديد</h3>
+      <input type="text" id="newName" placeholder="الاسم الكامل" />
+      <input type="email" id="newEmail" placeholder="البريد الإلكتروني" />
+      <input type="password" id="newPassword" placeholder="كلمة المرور" />
+      <select id="newRole">
+        <option value="">اختر الدور</option>
+        <option value="كاشير">كاشير</option>
+        <option value="مدير">مدير</option>
+      </select>
+      <input type="text" id="newBranch" placeholder="اسم الفرع أو المخزن" />
+      <input type="password" id="adminKey" placeholder="كلمة مرور المدير (1989)" />
+      <button id="addUserBtn">تسجيل المستخدم</button>
+      <p id="modalError"></p>
+      <hr>
+      <h3>📋 المستخدمون المسجلون:</h3>
+      <div id="userList"></div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, deleteUser } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-auth.js";
+    import { getFirestore, setDoc, doc, getDoc, collection, getDocs, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAwafvR_SA8v_tsA_B0YhknMqlytMNUCQk",
+      authDomain: "pos-bahaa.firebaseapp.com",
+      projectId: "pos-bahaa",
+      storageBucket: "pos-bahaa.appspot.com",
+      messagingSenderId: "898451030919",
+      appId: "1:898451030919:web:822b019b0b038081470922"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    const emailInput = document.getElementById("email");
+    const passwordInput = document.getElementById("password");
+    const loginBtn = document.getElementById("loginBtn");
+    const errorMsg = document.getElementById("error");
+
+    const openModalBtn = document.getElementById("openModalBtn");
+    const closeModalBtn = document.getElementById("closeModalBtn");
+    const userModal = document.getElementById("userModal");
+
+    const newName = document.getElementById("newName");
+    const newEmail = document.getElementById("newEmail");
+    const newPassword = document.getElementById("newPassword");
+    const newRole = document.getElementById("newRole");
+    const newBranch = document.getElementById("newBranch");
+    const adminKey = document.getElementById("adminKey");
+    const addUserBtn = document.getElementById("addUserBtn");
+    const modalError = document.getElementById("modalError");
+    const userList = document.getElementById("userList");
+
+    loginBtn.onclick = async () => {
+      errorMsg.textContent = "";
+      const email = emailInput.value.trim();
+      const password = passwordInput.value.trim();
+      if (!email || !password) {
+        errorMsg.textContent = "⚠️ أدخل البريد وكلمة المرور أولاً.";
+        return;
+      }
+
+      try {
+        const result = await signInWithEmailAndPassword(auth, email, password);
+        const uid = result.user.uid;
+        const userDoc = await getDoc(doc(db, "users", uid));
+        if (userDoc.exists()) {
+          const data = userDoc.data();
+          if (data.active === false) {
+            errorMsg.textContent = "🚫 هذا المستخدم غير نشط.";
+            return;
+          }
+          localStorage.setItem("userName", data.name);
+          localStorage.setItem("userEmail", data.email);
+          localStorage.setItem("userRole", data.role);
+          localStorage.setItem("userBranch", data.branch);
+         window.location.href = data.role === "مدير" ? "pos.html" : "home.html";
+
+
+          errorMsg.textContent = "❌ لا يوجد بيانات صلاحيات لهذا المستخدم.";
+        }
+      } catch (err) {
+        errorMsg.textContent = "❌ فشل تسجيل الدخول: " + err.message;
+      }
+    };
+
+    openModalBtn.onclick = () => {
+      const key = prompt("🔐 أدخل كلمة مرور المدير:");
+      if (key !== "1989") {
+        alert("❌ كلمة المرور الخاصة غير صحيحة.");
+        return;
+      }
+      userModal.style.display = "flex";
+      loadUsers();
+    };
+
+    closeModalBtn.onclick = () => {
+      userModal.style.display = "none";
+      modalError.textContent = "";
+    };
+
+    addUserBtn.onclick = async () => {
+      modalError.textContent = "";
+
+      const name = newName.value.trim();
+      const email = newEmail.value.trim();
+      const password = newPassword.value.trim();
+      const role = newRole.value;
+      const branch = newBranch.value.trim();
+      const key = adminKey.value.trim();
+
+            if (key !== "1989") {
+        modalError.textContent = "❌ كلمة مرور المدير غير صحيحة.";
+        return;
+      }
+
+      if (!name || !email || !password || !role || !branch) {
+        modalError.textContent = "⚠️ تأكد من إدخال جميع البيانات.";
+        return;
+      }
+
+      if (!email.includes("@") || !email.includes(".")) {
+        modalError.textContent = "❌ صيغة البريد الإلكتروني غير صحيحة.";
+        return;
+      }
+
+      if (password.length < 6) {
+        modalError.textContent = "❌ كلمة المرور ضعيفة. استخدم 6 أحرف على الأقل.";
+        return;
+      }
+
+      const snapshot = await getDocs(collection(db, "users"));
+      const exists = snapshot.docs.some(doc => doc.data().email === email);
+      if (exists) {
+        modalError.textContent = "❌ هذا البريد مسجل بالفعل.";
+        return;
+      }
+
+      try {
+        const result = await createUserWithEmailAndPassword(auth, email, password);
+        const uid = result.user.uid;
+        await setDoc(doc(db, "users", uid), {
+          name,
+          email,
+          role,
+          branch,
+          active: true
+        });
+        modalError.textContent = "✅ تم إنشاء المستخدم بنجاح.";
+        newName.value = "";
+        newEmail.value = "";
+        newPassword.value = "";
+        newRole.value = "";
+        newBranch.value = "";
+        adminKey.value = "";
+        loadUsers();
+      } catch (err) {
+        modalError.textContent = "❌ فشل إنشاء المستخدم: " + err.message;
+      }
+    };
+
+    async function loadUsers() {
+      userList.innerHTML = "⏳ جاري تحميل المستخدمين...";
+      const snapshot = await getDocs(collection(db, "users"));
+      userList.innerHTML = "";
+      snapshot.forEach((docSnap) => {
+        const data = docSnap.data();
+        const div = document.createElement("div");
+        div.className = "user-box";
+        div.innerHTML = `
+          👤 الاسم: <strong>${data.name}</strong><br>
+          📧 البريد: ${data.email}<br>
+          🧑‍💼 الدور: <span id="role-${docSnap.id}">${data.role}</span><br>
+          🏬 الفرع: ${data.branch}<br>
+          🔘 الحالة: <span id="status-${docSnap.id}">${data.active === false ? "غير نشط" : "نشط"}</span><br>
+          <button onclick="editUser('${docSnap.id}', '${data.name}', '${data.email}', '${data.role}', '${data.branch}')">✏️ تعديل</button>
+          <button onclick="deactivateUser('${docSnap.id}')">🚫 تعطيل</button>
+          ${data.active === false ? `<button onclick="activateUser('${docSnap.id}')">🔓 تفعيل</button>` : ""}
+          <button onclick="deleteUserFull('${docSnap.id}', '${data.email}')">🗑 حذف</button>
+        `;
+        userList.appendChild(div);
+      });
+    }
+
+    window.editUser = (id, name, email, role, branch) => {
+      const newName = prompt("👤 الاسم الجديد:", name);
+      const newEmail = prompt("📧 البريد الجديد:", email);
+      const newRole = prompt("🧑‍💼 الدور الجديد:", role);
+      const newBranch = prompt("🏬 الفرع الجديد:", branch);
+      if (newName && newEmail && newRole && newBranch) {
+        updateDoc(doc(db, "users", id), {
+          name: newName,
+          email: newEmail,
+          role: newRole,
+          branch: newBranch
+        }).then(() => {
+          alert("✅ تم التعديل بنجاح");
+          loadUsers();
+        });
+      }
+    };
+
+    window.deactivateUser = async (id) => {
+      await updateDoc(doc(db, "users", id), {
+        active: false
+      });
+      document.getElementById(`status-${id}`).textContent = "غير نشط";
+      alert("🚫 تم تعطيل المستخدم");
+    };
+
+    window.activateUser = async (id) => {
+      await updateDoc(doc(db, "users", id), {
+        active: true
+      });
+      document.getElementById(`status-${id}`).textContent = "نشط";
+      alert("✅ تم تفعيل المستخدم");
+      loadUsers();
+    };
+
+    window.deleteUserFull = async (id, email) => {
+      if (!confirm("⚠️ هل أنت متأكد من حذف هذا المستخدم نهائيًا؟")) return;
+
+      try {
+        await deleteDoc(doc(db, "users", id));
+        const currentUser = auth.currentUser;
+        if (currentUser && currentUser.email === email) {
+          await deleteUser(currentUser);
+          alert("🗑 تم حذف المستخدم من Firestore و Authentication");
+        } else {
+          alert("🗑 تم حذف المستخدم من Firestore فقط.");
+        }
+        loadUsers();
+      } catch (err) {
+        alert("❌ فشل الحذف: " + err.message);
+      }
+    };
+  </script>
+</body>
+</html>
+
+
+<script>
+  function forceReload() {
+    const url = window.location.pathname + "?v=" + Date.now();
+    window.location.href = url;
+  }
+</script>
