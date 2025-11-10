@@ -22,13 +22,8 @@
       <span id="clock">🕒 جاري تحميل الوقت...</span>
       <button id="themeToggle" class="theme-toggle" title="تبديل المظهر">🌓</button> 
     </div>
-    <!-- ✅ زر مزامنة الصور -->
-<div class="topbar-section" id="syncImagesSection" onclick="openModal('syncImagesModal')">
-  <div class="topbar-icon large-icon">🔃</div>
-  <div class="topbar-label">آخر مزامنة: <span id="lastSyncTime">—</span></div>
-</div>
+    
 
-</button>
     <div class="topbar-buttons">
       <div class="icon-button" onclick="showScreen('msgScreen')">
   <span class="badge" id="msgCount">2</span>
@@ -66,7 +61,7 @@
 <button onclick="document.getElementById('settingsDropdown').style.display='none'; openModal('companyModal'); loadCompanies()">🏢 إضافة شركة استثمارية</button>
 <button onclick="document.getElementById('settingsDropdown').style.display='none'; openModal('fundModal'); loadFunds()">💰 إضافة صندوق استثماري</button>
 <button onclick="document.getElementById('settingsDropdown').style.display='none'; openModal('generalModal'); loadGeneralSettings()">⚙️ إعدادات عامة</button>
-<button onclick="document.getElementById('settingsDropdown').style.display='none'; openModal('generalModal'); loadGeneralSettings()">📊 حالة النظام</button>
+<button onclick="document.getElementById('settingsDropdown').style.display='none'; openModal('statusModal'); loadGeneralSettings()">📊 حالة النظام</button>
 </div>
 
 
@@ -135,7 +130,7 @@
   <div id="companyForm" class="settings-form"><h3>🏢 نافذة الشركة الاستثمارية (منبثقة)</h3></div>
   <div id="fundForm" class="settings-form"><h3>💰 نافذة الصندوق الاستثماري (منبثقة)</h3></div>
   <div id="generalForm" class="settings-form"><h3>⚙️ نافذة الإعدادات العامة (منبثقة)</h3></div>
- <div id="generalForm" class="settings-form"><h3>⚙️ نافذة حالة النظام  (منبثقة)</h3></div>
+ <div id="systemStatusForm" class="settings-form"><h3>⚙️ نافذة حالة النظام  (منبثقة)</h3></div>
 </div>
 
 <div id="categoryModal" class="modal">
@@ -261,116 +256,6 @@
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<!-- 🧩 شاشة المزامنة الكاملة -->
-<div id="syncImagesModal" class="modal">
-  <div class="modal-content">
-    <h3>🔄 مزامنة روابط الصور</h3>
-
-    <!-- ✅ زر توليد ملفات JSON -->
-    <button onclick="generateJson()">📁 توليد ملفات الصور من Google Drive</button>
-    <p id="generateStatus">📭 لم يتم تنفيذ التوليد بعد</p>
-
-    <!-- 📊 جدول نتائج التوليد -->
-    <table class="sync-table">
-      <thead>
-        <tr>
-          <th>📂 النوع</th>
-          <th>📸 عدد الصور</th>
-          <th>📅 تاريخ التوليد</th>
-          <th>👤 المستخدم</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>📁 التصنيفات</td>
-          <td id="countCategories">—</td>
-          <td id="dateCategories">—</td>
-          <td id="userCategories">—</td>
-        </tr>
-        <tr>
-          <td>📦 الأصناف</td>
-          <td id="countItems">—</td>
-          <td id="dateItems">—</td>
-          <td id="userItems">—</td>
-        </tr>
-      </tbody>
-    </table>
-
-    <hr>
-
-    <!-- ✅ زر تصدير الصور إلى Firestore -->
-   <button onclick="exportImagesToFirestore()">🚀 تصدير الصور إلى قاعدة البيانات</button>
-<span id="exportStatus">📭 لم يتم تنفيذ التصدير بعد</span>
-
-
-    <!-- 📊 جدول نتائج التصدير -->
-    <table class="sync-table">
-      <thead>
-        <tr>
-          <th>📂 النوع</th>
-          <th>✅ تم رفعه</th>
-          <th>❌ تم تجاهله</th>
-          <th>📅 تاريخ التصدير</th>
-          <th>📄 تقرير الأخطاء</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>📁 التصنيفات + الأصناف</td>
-          <td id="uploadedCount">—</td>
-          <td id="skippedCount">—</td>
-          <td id="exportDate">—</td>
-          <td><a id="errorReportLink" href="#" target="_blank">—</a></td>
-        </tr>
-      </tbody>
-    </table>
-
-    <button onclick="closeModal('syncImagesModal')">❌ إغلاق</button>
-  </div>
-</div>
-
-
   <div id="logoutScreen" class="screen">
     <h2>🔓 تم تسجيل الخروج</h2>
     <p>تم مسح البيانات المحلية بنجاح.</p>
@@ -397,115 +282,12 @@
 
 
 
-<!-- Firebase SDK -->
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
-
-<!-- Firebase Config -->
-<script>
-  const firebaseConfig = {
-    apiKey: "AIzaSyAwafvR_SA8v_tsA_B0YhknMqlytMNUCQk",
-    authDomain: "pos-bahaa.firebaseapp.com",
-    projectId: "pos-bahaa",
-    storageBucket: "pos-bahaa.firebasestorage.app",
-    messagingSenderId: "898451030919",
-    appId: "1:898451030919:web:822b019b0b038081470922",
-    measurementId: "G-XT1YQKFJHD"
-  };
-
-  firebase.initializeApp(firebaseConfig);
-  const db = firebase.firestore();
-</script>
-
-<!-- زر التصدير + الحالة -->
-<button onclick="exportImagesToFirestore()">🚀 تصدير الصور إلى قاعدة البيانات</button>
-<span id="exportStatus">📭 لم يتم تنفيذ التصدير بعد</span>
-
-<!-- كود التصدير -->
-<script>
-  async function exportImagesToFirestore() {
-    const status = document.getElementById("exportStatus");
-    status.textContent = "🚀 جارى تحميل الملفات وتحديث البيانات...";
-    status.style.color = "blue";
-
-    try {
-      // روابط السكربت الآمنة
-      const categoryJsonUrl = "https://script.google.com/macros/s/AKfycbwce4kpNoXCKZlyV3Tf5BRwQWl-cW3hLk2xXuethq1CwIwbdOgq2Em4sSd4L8dYG5BH/exec?type=category";
-      const itemJsonUrl = "https://script.google.com/macros/s/AKfycbwce4kpNoXCKZlyV3Tf5BRwQWl-cW3hLk2xXuethq1CwIwbdOgq2Em4sSd4L8dYG5BH/exec?type=item";
-
-      const [categoryRes, itemRes] = await Promise.all([
-        fetch(categoryJsonUrl).then(r => r.json()),
-        fetch(itemJsonUrl).then(r => r.json())
-      ]);
-
-      let updated = 0, skipped = 0;
-
-      // تحديث التصنيفات
-      const categorySnap = await db.collection("categories").get();
-      categorySnap.forEach(async doc => {
-        const data = doc.data();
-        const imageName = data.imageName;
-        const imageUrl = categoryRes[imageName];
-        if (imageName && imageUrl) {
-          await doc.ref.update({ imageUrl });
-          updated++;
-        } else {
-          skipped++;
-        }
-      });
-
-      // تحديث الأصناف
-      const itemSnap = await db.collection("items").get();
-      itemSnap.forEach(async doc => {
-        const data = doc.data();
-        const imageName = data.imageName;
-        const imageUrl = itemRes[imageName];
-        if (imageName && imageUrl) {
-          await doc.ref.update({ imageUrl });
-          updated++;
-        } else {
-          skipped++;
-        }
-      });
-
-      status.textContent = `✅ تم التحديث: ${updated} | ❌ تم تجاهل: ${skipped}`;
-      status.style.color = "green";
-
-    } catch (err) {
-      console.error("❌ خطأ أثناء التصدير:", err);
-      status.textContent = "❌ فشل في التصدير";
-      status.style.color = "red";
-    }
-  }
-</script>
 
 
 
 
+  <script type="module" src="script-pos.js?v=1.0.3"></script>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  <script type="module" src="script-pos.js"></script>
 
 </body>
 </html>
