@@ -1,3 +1,6 @@
+console.log("✅ السكربت اتحمّل");
+console.log("📡 الاتصال بـ Firebase:", db, auth, storage);
+
 import { db, auth, storage } from "./firebase-config.js";
 
 import {
